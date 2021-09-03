@@ -1,9 +1,13 @@
 #!/usr/bin/python
 import requests
 import sys
-import hashlib
+from hashlib import md5
 
 def decrypt_hash(hash_to_crack):
+    if len(hash_to_crack) != 16 and len(hash_to_crack) != 32:
+        print('Please provide a valid md5 hash.')
+        return
+    print(f'Trying to crack "{hash_to_crack}"... Please wait')
     post_data = {
         'hash': hash_to_crack,
         'decrypt': 'Decrypt'
@@ -19,7 +23,7 @@ def decrypt_hash(hash_to_crack):
         print('Sorry, but this hash is not in our database.')
 
 def encrypt_text(text):
-    print(f"Hash: '{hashlib.md5(text.encode()).hexdigest()}'")
+    print(f"Hash: '{md5(text.encode()).hexdigest()}'")
 
 def print_help():
     help_msg = '''
@@ -34,6 +38,8 @@ def print_help():
     \t\talias: --help\n
     Thanks for using hashmd. Enjoy!
     Created By Tuvel Ran
+
+    Source: https://github.com/TuvelRan/hashmd
     '''
     print(help_msg)
 
@@ -49,11 +55,9 @@ if args:
             encrypt_text(text_to_encrypt)
     elif flag == '-d' or flag == '--decrypt':
         if len(args) > 1:
-            print(f'Trying to crack "{args[1]}"... Please wait')
             decrypt_hash(args[1])
         else:
             hash_to_crack = input('Hash To Crack: ')
-            print(f'Trying to crack "{hash_to_crack}"... Please wait')
             decrypt_hash(hash_to_crack)
     elif flag == '-h' or flag == '--help':
         print_help()

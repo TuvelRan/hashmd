@@ -1,5 +1,15 @@
 ## Description
-This script can be used to encrypt text to md5, and also try to decrypt md5 hash to text using https://md5decrypt.net/en/
+This script is used to encrypt or decrypt the following types of hashes:
+- Hex
+- Binary
+- MD5
+- SHA1
+- SHA256
+- SHA384
+- SHA512
+- Base64
+
+**makefile (the command installer) will come soon.**
 
 ## How To Use
 Execute the Python script `hashmd.py` with the `-h` option, to open the script manual.

@@ -4,6 +4,7 @@ import sys
 import hashlib
 import base64
 import binascii
+from re import search
 
 class bcolors:
     HEADER = '\033[95m'
@@ -29,6 +30,7 @@ def decrypt_md5(hash_to_crack):
         value = results[1]
         value = value[0:str(value).index('</b>')]
         print(f"{bcolors.OKGREEN}Found: '{value}'{bcolors.ENDC}\n")
+        return str(value)
     except:
         print(f'{bcolors.FAIL}Sorry, but this hash is not in our database.{bcolors.ENDC}\n')
 
@@ -48,6 +50,7 @@ def decrypt_sha256(hash_to_crack):
         value = results[1]
         value = value[0:str(value).index('</b>')]
         print(f"{bcolors.OKGREEN}Found: '{value}'{bcolors.ENDC}\n")
+        return value
     except:
         print(f'{bcolors.FAIL}Sorry, but this hash is not in our database.{bcolors.ENDC}\n')
 
@@ -59,6 +62,7 @@ def encrypt_base64(text):
 
 def decrypt_base64(hash_to_crack):
     print(f"\n{bcolors.HEADER}BASE64: '{hash_to_crack}'{bcolors.ENDC}\n{bcolors.WARNING}Text:{bcolors.ENDC} {bcolors.OKGREEN}'{base64.b64decode(hash_to_crack.encode()).decode()}'{bcolors.ENDC}\n")
+    return str(base64.b64decode(hash_to_crack.encode()).decode())
 
 def encrypt_sha1(text):
     print(f"\n{bcolors.HEADER}Text: '{text}'{bcolors.ENDC}\n{bcolors.WARNING}SHA1:{bcolors.ENDC} {bcolors.OKGREEN} '{hashlib.sha1(text.encode()).hexdigest()}'{bcolors.ENDC}\n")
@@ -76,6 +80,7 @@ def decrypt_sha1(hash_to_crack):
         value = results[1]
         value = value[0:str(value).index('</b>')]
         print(f"{bcolors.OKGREEN}Found: '{value}'{bcolors.ENDC}\n")
+        return str(value)
     except:
         print(f'{bcolors.FAIL}Sorry, but this hash is not in our database.{bcolors.ENDC}\n')
 
@@ -95,6 +100,7 @@ def decrypt_sha384(hash_to_crack):
         value = results[1]
         value = value[0:str(value).index('</b>')]
         print(f"{bcolors.OKGREEN}Found: '{value}'{bcolors.ENDC}\n")
+        return str(value)
     except:
         print(f'{bcolors.FAIL}Sorry, but this hash is not in our database.{bcolors.ENDC}\n')
 
@@ -114,6 +120,7 @@ def decrypt_sha512(hash_to_crack):
         value = results[1]
         value = value[0:str(value).index('</b>')]
         print(f"{bcolors.OKGREEN}Found: '{value}'{bcolors.ENDC}\n")
+        return str(value)
     except:
         print(f'{bcolors.FAIL}Sorry, but this hash is not in our database.{bcolors.ENDC}\n')
 
@@ -123,6 +130,7 @@ def encrypt_hex(text):
 def decrypt_hex(text):
     try:
         print(f"\n{bcolors.HEADER}Hex: '{text}'{bcolors.ENDC}\n{bcolors.WARNING}Text:{bcolors.ENDC} {bcolors.OKGREEN}'{bytearray.fromhex(text).decode()}'{bcolors.ENDC}\n")
+        return str(bytearray.fromhex(text).decode())
     except:
         print(f"\n{bcolors.HEADER}Hex: '{text}'{bcolors.ENDC}\n{bcolors.WARNING}Text:{bcolors.ENDC} {bcolors.FAIL}'String Contains Bad Symbols'{bcolors.ENDC}\n")
 
@@ -140,13 +148,14 @@ def reverse(string):
 
 def decrypt_binary(text):
     print(f"\n{bcolors.HEADER}Binary: '{text}'{bcolors.ENDC}\n{bcolors.WARNING}Text:{bcolors.ENDC} {bcolors.OKGREEN}'{bin_to_ascii(text)}'{bcolors.ENDC}\n")
+    return str(bin_to_ascii(text))
 
 def print_help():
     help_msg = f'''
     {bcolors.HEADER}hashmd is used for encrypting and decrypting hashes.{bcolors.ENDC}\n
     command: hashmd {bcolors.OKBLUE}<type>{bcolors.ENDC} {bcolors.OKCYAN}<option>{bcolors.ENDC} {bcolors.OKGREEN}<text/hash>{bcolors.ENDC}\n
     {bcolors.OKBLUE}Types:{bcolors.ENDC}
-    \t--auto {bcolors.FAIL}(N/A Currently){bcolors.ENDC} the script will identify and decrypt the given hash
+    \t--auto {bcolors.FAIL}(SHA512 Not Supported Yet){bcolors.ENDC} the script will identify and decrypt the given hash
     \t\talias: -a
 
     \t--hex encrypt/decrypt hex
@@ -188,6 +197,82 @@ def e_or_d(action):
         return 'd'
     return action
 
+def print_info(text):
+    print(f'{bcolors.OKBLUE}[{bcolors.ENDC}{bcolors.OKGREEN}*{bcolors.ENDC}{bcolors.OKBLUE}]{bcolors.ENDC} {bcolors.WARNING}{text}{bcolors.ENDC}')
+
+def print_fail(text):
+    print(f'{bcolors.OKBLUE}[{bcolors.ENDC}{bcolors.HEADER}-{bcolors.ENDC}{bcolors.OKBLUE}]{bcolors.ENDC} {bcolors.FAIL}{text}{bcolors.ENDC}')
+
+def print_success(text):
+    print(f'{bcolors.OKGREEN}[{bcolors.ENDC}{bcolors.OKBLUE}+{bcolors.ENDC}{bcolors.OKGREEN}]{bcolors.ENDC} {bcolors.OKCYAN}{text}{bcolors.ENDC}')
+
+def handle_auto(hash_to_crack):
+    # Detect type of hash:
+    cracked = 0
+    completed = False
+    print()
+    print_info(f'Trying to idenfity {hash_to_crack}')
+
+    while True:
+        # is it binary?
+        binary = search(r'^[01]+$', str(hash_to_crack))
+        if binary:
+            print_info('Binary has been identified')
+            hash_to_crack = decrypt_binary(hash_to_crack)
+            cracked = 1
+            continue
+        # is it sha1?
+        sha1 = search(r'^([a-f0-9]{40})$', str(hash_to_crack))
+        if sha1:
+            print_info('SHA1 has been identified')
+            hash_to_crack = decrypt_sha1(hash_to_crack)
+            cracked = 1
+            continue
+        md5 = search(r'^([a-f0-9]{32})$', str(hash_to_crack))
+        if md5:
+            print_info('MD5 has been identified')
+            hash_to_crack = decrypt_md5(hash_to_crack)
+            cracked = 1
+            continue
+        sha256 = search(r'^([a-fA-F0-9]{64})$', str(hash_to_crack))
+        if sha256:
+            print_info('SHA256 has been identified')
+            hash_to_crack = decrypt_sha256(hash_to_crack)
+            cracked = 1
+            continue
+        sha384 = search(r'^([a-fA-F\d]{92,100})$', str(hash_to_crack))
+        if sha384:
+            print_info('SHA384 has been identified')
+            hash_to_crack = decrypt_sha384(hash_to_crack)
+            cracked = 1
+            continue
+        _hex = search(r'^(0x|0X)?[a-fA-F0-9]+$', str(hash_to_crack))
+        if _hex:
+            print_info('HEX has been identified')
+            hash_to_crack = decrypt_hex(hash_to_crack)
+            cracked = 1
+            continue
+        b64 = search(r'^([A-Za-z0-9+\/=])+$', str(hash_to_crack))
+        if b64:
+            try:
+                base64.b64decode(hash_to_crack.encode()).decode()
+                print_info('Base64 has been identified')
+                hash_to_crack = decrypt_base64(hash_to_crack)
+            except:
+                print_success(f'Decryption Result: {hash_to_crack}\n')
+                completed = True
+                break
+            cracked = 1
+            continue
+        if cracked > 0:
+            print_success(f'Decryption Result: {hash_to_crack}\n')
+            completed = True
+            break
+    if not completed:
+        print_fail(f"Failed to identify type\n")
+    
+    
+
 
 def handle_args(args):
     flag = args[0]
@@ -198,6 +283,9 @@ def handle_args(args):
     if len(args) > 2:
         action = args[1]
     else:
+        if (args[0] == '--auto' or args[0] == '-a') and len(args) > 1:
+            handle_auto(args[1])
+            return
         if args[0] == '--help' or args[0] == '-h':
             print_help()
             return

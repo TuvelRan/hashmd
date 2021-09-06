@@ -133,6 +133,7 @@ def decrypt_hex(text):
         return str(bytearray.fromhex(text).decode())
     except:
         print(f"\n{bcolors.HEADER}Hex: '{text}'{bcolors.ENDC}\n{bcolors.WARNING}Text:{bcolors.ENDC} {bcolors.FAIL}'String Contains Bad Symbols'{bcolors.ENDC}\n")
+        return str(bytearray.fromhex(text).decode())
 
 def encrypt_binary(text):
     print(f"\n{bcolors.HEADER}Text: '{text}'{bcolors.ENDC}\n{bcolors.WARNING}Binary:{bcolors.ENDC} {bcolors.OKGREEN}'{bin(int.from_bytes(text.encode(), 'big'))[2:]}'{bcolors.ENDC}\n")
@@ -221,6 +222,17 @@ def handle_auto(hash_to_crack):
             hash_to_crack = decrypt_binary(hash_to_crack)
             cracked = 1
             continue
+        _hex = search(r'^(0x|0X)?[a-fA-F0-9]+$', str(hash_to_crack))
+        if _hex:
+            save = hash_to_crack
+            try:
+                print_info('HEX has been identified')
+                hash_to_crack = decrypt_hex(hash_to_crack)
+                cracked = 1
+                continue
+            except:
+                print_info('Looks like I was wrong, Trying SHA1...')
+                hash_to_crack = save
         # is it sha1?
         sha1 = search(r'^([a-f0-9]{40})$', str(hash_to_crack))
         if sha1:
@@ -244,12 +256,6 @@ def handle_auto(hash_to_crack):
         if sha384:
             print_info('SHA384 has been identified')
             hash_to_crack = decrypt_sha384(hash_to_crack)
-            cracked = 1
-            continue
-        _hex = search(r'^(0x|0X)?[a-fA-F0-9]+$', str(hash_to_crack))
-        if _hex:
-            print_info('HEX has been identified')
-            hash_to_crack = decrypt_hex(hash_to_crack)
             cracked = 1
             continue
         b64 = search(r'^([A-Za-z0-9+\/=])+$', str(hash_to_crack))
